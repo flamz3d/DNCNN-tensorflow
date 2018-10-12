@@ -2,3 +2,6 @@
 __pycache__
 log/
 sample/
+log_*/
+dataset/
+train/

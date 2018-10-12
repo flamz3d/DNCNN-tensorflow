@@ -25,7 +25,7 @@ def arg_scope(is_training):
             return arg_scp
 
 
-def base(inputs, reuse=None, scope=None):
+def base(inputs, reuse=None, scope=None, num_channels=1):
     net = inputs
     with tf.variable_scope(scope or "model", reuse=reuse) as scp:
         end_pts_collection = scp.name+"end_pts"
@@ -48,7 +48,7 @@ def base(inputs, reuse=None, scope=None):
             net = slim.conv2d(net, 64, [3, 3], scope="postconv2")
             net = slim.conv2d(net, 64, [3, 3], scope="postconv3")
 
-            net = slim.conv2d(net, 1, [3, 3],
+            net = slim.conv2d(net, num_channels, [3, 3],
                               activation_fn=tf.nn.tanh,
                               normalizer_fn=None,
                               normalizer_params=None,
@@ -60,7 +60,7 @@ def base(inputs, reuse=None, scope=None):
     return dn, net, end_pts
 
 
-def residual(inputs, reuse=None, scope=None):
+def residual(inputs, reuse=None, scope=None, num_channels=1):
     net = inputs
     with tf.variable_scope(scope or "model", reuse=reuse) as scp:
         end_pts_collection = scp.name+"end_pts"
@@ -79,7 +79,7 @@ def residual(inputs, reuse=None, scope=None):
             net = slim.conv2d(net, 64, [3, 3], scope="postconv2")
             net = slim.conv2d(net, 64, [3, 3], scope="postconv3")
 
-            net = slim.conv2d(net, 1, [3, 3],
+            net = slim.conv2d(net, num_channels, [3, 3],
                               activation_fn=tf.nn.tanh,
                               normalizer_fn=None,
                               normalizer_params=None,
@@ -92,7 +92,7 @@ def residual(inputs, reuse=None, scope=None):
 
 
 
-def base_skip(inputs, reuse=None, scope=None):
+def base_skip(inputs, reuse=None, scope=None, num_channels=1):
     net = inputs
     with tf.variable_scope(scope or "model", reuse=reuse) as scp:
         end_pts_collection = scp.name+"end_pts"
@@ -119,8 +119,7 @@ def base_skip(inputs, reuse=None, scope=None):
             net = slim.conv2d(net, 64, [3, 3], scope="postconv1")
             net = slim.conv2d(net, 64, [3, 3], scope="postconv2")
             net = slim.conv2d(net, 64, [3, 3], scope="postconv3")
-
-            net = slim.conv2d(net, 1, [3, 3],
+            net = slim.conv2d(net, num_channels, [3, 3],
                               activation_fn=tf.nn.tanh,
                               normalizer_fn=None,
                               normalizer_params=None,
@@ -132,7 +131,7 @@ def base_skip(inputs, reuse=None, scope=None):
     return dn, net, end_pts
 
 
-def residual_skip(inputs, reuse=None, scope=None):
+def residual_skip(inputs, reuse=None, scope=None, num_channels=1):
     net = inputs
     with tf.variable_scope(scope or "model", reuse=reuse) as scp:
         end_pts_collection = scp.name+"end_pts"
@@ -156,7 +155,7 @@ def residual_skip(inputs, reuse=None, scope=None):
             net = slim.conv2d(net, 64, [3, 3], scope="postconv2")
             net = slim.conv2d(net, 64, [3, 3], scope="postconv3")
 
-            net = slim.conv2d(net, 1, [3, 3],
+            net = slim.conv2d(net, num_channels, [3, 3],
                               activation_fn=tf.nn.tanh,
                               normalizer_fn=None,
                               normalizer_params=None,

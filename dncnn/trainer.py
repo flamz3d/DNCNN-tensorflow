@@ -15,13 +15,15 @@ class Trainer(object):
     def __init__(self, filename, config):
         self.params = dict()
         self.config = config
-
         self._prepare_inputs(filename)
         self._build_model()
 
         self.saver = tf.train.Saver(max_to_keep=config.max_to_keep)
         self.loss_summaries = tf.summary.merge([
-            tf.summary.scalar("L2_loss", self.params["L2_loss"])
+            tf.summary.scalar("L2_loss", self.params["L2_loss"]),
+            tf.summary.image("reconstructed", self.params["denoised"]),
+            tf.summary.image("ground_truth", self.params["reference_im"]),
+            tf.summary.image("source", self.params["artifact_im"])
         ])
         self.summary_writer = tf.summary.FileWriter(config.logdir)
 
@@ -54,6 +56,7 @@ class Trainer(object):
             output_height=config.image_size, 
             output_width=config.image_size,
             min_after_dequeue=config.min_after_dequeue,
+            num_channels=config.num_channels,
             use_shuffle_batch=True)
 
         params["is_training"]   = is_training
@@ -88,7 +91,7 @@ class Trainer(object):
 
         with slim.arg_scope(model.arg_scope(is_training)):
             G_dn, G_residual, end_pts = model_fn(
-                artifact_im, scope="generator")
+                artifact_im, scope="generator", num_channels=config.num_channels)
 
         num_params = 0
         for var in tf.trainable_variables():

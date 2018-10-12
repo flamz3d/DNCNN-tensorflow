@@ -45,14 +45,14 @@ def read_image_from_filename(filename,
                              batch_size, num_threads=4,
                              output_height=128, output_width=128,
                              min_after_dequeue=5000,
+                             num_channels=1,
                              use_shuffle_batch=True, scope=None):
     with tf.variable_scope(scope, "image_producer"):
         textReader = tf.TextLineReader()
 
         csv_path = tf.train.string_input_producer([filename])
         _, csv_content = textReader.read(csv_path)
-        artifact_filenames, reference_filenames = tf.decode_csv(
-            csv_content, record_defaults=[[""], [""]])
+        artifact_filenames, reference_filenames, quality = tf.decode_csv(csv_content, record_defaults=[[""], [""], [""]])
 
         # when training use_shuffle_batch must be True
         # else (e.g. evaluation) evaluation code runs in single epoch and
@@ -76,14 +76,15 @@ def read_image_from_filename(filename,
         """
         artifact_data  = tf.read_file(artifact_filenames)
         reference_data = tf.read_file(reference_filenames)
-        artifact_im  = tf.image.decode_jpeg(artifact_data, channels=1)
-        reference_im = tf.image.decode_jpeg(reference_data, channels=1)
+        artifact_im  = tf.image.decode_png(artifact_data, channels=num_channels)
+        reference_im = tf.image.decode_png(reference_data, channels=num_channels)
 
         # concat all images in channel axis to randomly crop together
         concated_im = tf.concat([artifact_im, reference_im], axis=2)
+
         if use_shuffle_batch:
             concated_im = tf.random_crop(concated_im,
-                                         [output_height, output_width, 1+1])
+                                         [output_height, output_width, num_channels+num_channels])
         elif output_height > 0 and output_width > 0 and not use_shuffle_batch:
             concated_im = tf.image.resize_image_with_crop_or_pad(concated_im,
                                                                  output_height,
@@ -108,7 +109,7 @@ def read_image_from_filename(filename,
                 name="batch")
 
         # split concatenated data
-        artifact_batch, reference_batch = tf.split(im_batch, [1, 1], axis=3)
+        artifact_batch, reference_batch = tf.split(im_batch, [num_channels, num_channels], axis=3)
         artifact_batch  = tf.cast(artifact_batch, tf.float32) / 127.5 - 1.0
         reference_batch = tf.cast(reference_batch, tf.float32) / 127.5 - 1.0
 
